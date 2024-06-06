@@ -1,36 +1,38 @@
 <template>
   <div class="receipt-form">
     <div class="form-header">
-      <h2>{{ isEditMode ? '편집' : '새 영수증' }}</h2>
-      <button @click="saveReceipt">저장</button>
+      <button @click="goBack" class="back-button">↩</button>
+      <h2>{{ isEditMode ? '영수증 수정' : '영수증 작성' }}</h2>
+      <button @click="saveReceipt" class="save-button">저장</button>
     </div>
     <div class="form-content">
       <div class="form-group">
         <label for="amount">금액 (필수)</label>
-        <input v-model="receipt.amount" type="text" id="amount" placeholder="금액을 입력하세요(￦)">
+        <input
+          v-model="formattedAmount"
+          @input="formatAmount"
+          type="text"
+          id="amount"
+          placeholder="금액을 입력하세요"
+          inputmode="numeric"
+          pattern="[0-9,]*"
+          required
+        />
       </div>
       <div class="form-group">
         <label for="date">날짜 (필수)</label>
-        <input v-model="receipt.date" type="date" id="date">
+        <input v-model="receipt.date" type="date" id="date" required>
       </div>
       <div class="form-group">
         <label for="category">구분 (필수)</label>
-        <select v-model="receipt.category" id="category">
+        <select v-model="receipt.category" id="category" required>
           <option value="">구분 항목을 선택하세요</option>
           <option v-for="(category, index) in categories" :key="index" :value="category">{{ category }}</option>
         </select>
       </div>
       <div class="form-group">
-        <label for="detail">비목 (필수)</label>
-        <input v-model="receipt.detail" type="text" id="detail" placeholder="비목을 선택하세요">
-      </div>
-      <div class="form-group">
         <label for="payment">지출처</label>
         <input v-model="receipt.payment" type="text" id="payment" placeholder="지출처를 입력하세요">
-      </div>
-      <div class="form-group">
-        <label for="purpose">목적</label>
-        <input v-model="receipt.purpose" type="text" id="purpose" placeholder="목적을 입력하세요">
       </div>
       <div class="form-group">
         <label for="item">품목</label>
@@ -39,9 +41,6 @@
       <div class="form-group">
         <label for="memo">메모</label>
         <textarea v-model="receipt.memo" id="memo" placeholder="간단한 메모를 입력하세요"></textarea>
-      </div>
-      <div class="form-group">
-        <button @click="saveReceipt" class="save-button">저장</button>
       </div>
     </div>
   </div>
@@ -58,23 +57,29 @@ export default {
         amount: '',
         date: '',
         category: '',
-        detail: '',
         payment: '',
-        purpose: '',
         item: '',
         memo: ''
       },
-      categories: []
+      categories: ['식비', '교통비', '주거비', '기타'], // 샘플 카테고리
     };
   },
   computed: {
     ...mapGetters(['getReceiptById']),
     currentReceipt() {
       const id = this.$route.params.id;
-      return id !== undefined ? this.getReceiptById(id) : null;
+      return id && id !== 'new' ? this.getReceiptById(id) : null;
     },
     isEditMode() {
-      return this.$route.params.id !== undefined;
+      return this.$route.params.id && this.$route.params.id !== 'new';
+    },
+    formattedAmount: {
+      get() {
+        return this.receipt.amount ? this.receipt.amount.toLocaleString() : '';
+      },
+      set(value) {
+        this.receipt.amount = value.replace(/,/g, '');
+      }
     }
   },
   methods: {
@@ -85,7 +90,7 @@ export default {
       } else {
         this.addReceipt(this.receipt);
       }
-      this.$router.push('/');
+      this.$router.push('/home'); // 여기서 홈 뷰로 이동
     },
     setReceiptData() {
       if (this.currentReceipt) {
@@ -99,36 +104,26 @@ export default {
         amount: '',
         date: '',
         category: '',
-        detail: '',
         payment: '',
-        purpose: '',
         item: '',
         memo: ''
       };
     },
-    loadCategories() {
-      const storedCategories = JSON.parse(localStorage.getItem('categories'));
-      if (storedCategories) {
-        this.categories = storedCategories;
+    goBack() {
+      this.$router.go(-1);
+    },
+    formatAmount(event) {
+      const value = event.target.value.replace(/,/g, '');
+      if (!isNaN(value)) {
+        this.formattedAmount = parseInt(value, 10).toLocaleString();
       }
     }
   },
   watch: {
-    currentReceipt: 'setReceiptData',
-    '$route.params.selectedCategory'(newCategory) {
-      if (newCategory) {
-        this.receipt.category = newCategory;
-      }
-    }
+    currentReceipt: 'setReceiptData'
   },
   created() {
     this.setReceiptData();
-    if (this.$route.params.selectedCategory) {
-      this.receipt.category = this.$route.params.selectedCategory;
-    }
-  },
-  mounted() {
-    this.loadCategories();
   }
 };
 </script>
@@ -156,9 +151,16 @@ export default {
   font-size: 20px;
 }
 
-.form-header button {
+.form-header .back-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.form-header .save-button {
   padding: 5px 10px;
-  background-color: #708ca3;
+  background-color: #007bff;
   color: white;
   border: none;
   border-radius: 5px;
@@ -168,6 +170,7 @@ export default {
   width: 100%;
   padding: 20px;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .form-group {
@@ -192,15 +195,6 @@ export default {
 
 .form-group textarea {
   resize: vertical;
-}
-
-.save-button {
-  margin-top: 10px;
-  padding: 5px 10px;
-  background-color: #708ca3;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  height: 100px;
 }
 </style>

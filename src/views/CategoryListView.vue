@@ -1,18 +1,20 @@
 <template>
   <div class="category-list-view">
     <div class="header">
-      <button class="back-button" @click="goBack">＜</button>
+      <button class="back-button" @click="goBack">↩</button>
       <h2>구분 리스트</h2>
-      <router-link to="/categories/add" class="add-button">추가</router-link>
     </div>
     <div class="content">
       <div v-for="(category, index) in categories" :key="index" class="category-item">
         <div class="category-item-content">
           <span @click="selectCategory(category)">{{ category }}</span>
-          <button @click="deleteCategory(index)" class="delete-button">삭제</button>
+          <button @click="deleteCategory(index)" class="delete-button">
+            <img src="https://search.pstatic.net/sunny/?src=https%3A%2F%2Fpng.pngtree.com%2Fpng-vector%2F20230222%2Fourmid%2Fpngtree-trash-line-icon-png-image_6614583.png&type=sc960_832" alt="휴지통 아이콘" class="icon">
+          </button>
         </div>
       </div>
     </div>
+    <router-link to="/categories/add" class="add-button">+</router-link>
   </div>
 </template>
 
@@ -76,11 +78,13 @@ export default {
   height: 100vh;
   justify-content: flex-start;
   align-items: center;
+  position: relative; /* Ensure relative positioning for the add button */
 }
 
 .header {
   width: 100%;
   padding: 20px;
+  padding-right: 60px; /* Ensure space for the add button */
   background-color: #f5f5f5;
   display: flex;
   justify-content: space-between;
@@ -90,13 +94,38 @@ export default {
 .header h2 {
   margin: 0;
   font-size: 24px;
+  width: 100%; /* 가로 길이 100%로 설정 */
+  max-width: 800px; /* 최대 가로 길이 설정 */
+  margin: 0 300px; /* 양 옆의 여백을 균등하게 설정 */
 }
 
 .back-button, .add-button {
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: 24px;
   cursor: pointer;
+}
+
+.back-button {
+  font-size: 24px;
+  color: #000000;
+}
+
+.add-button {
+  font-size: 32px;
+  font-weight: bold;
+  position: absolute;
+  top: 20px; /* Align with the header's top padding */
+  right: -50px; /* Align with the header's right padding */
+  background-color: #007bff; /* Background color */
+  color: white; /* White text */
+  border-radius: 50%; /* Round button */
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
 }
 
 .content {
@@ -126,11 +155,19 @@ export default {
 }
 
 .delete-button {
-  background-color: #ff4d4d;
-  color: white;
+  background: none;
   border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
+  color: #ff4d4d;
+  font-size: 20px;
   cursor: pointer;
+}
+
+.icon {
+  width: 20px; /* Adjust the size as needed */
+  height: 20px;
+}
+
+.delete-button i {
+  pointer-events: none;
 }
 </style>

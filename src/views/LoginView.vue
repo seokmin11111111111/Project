@@ -1,6 +1,9 @@
 <template>
   <div class="login-container">
-    <h1>RECEIPT KEEPER</h1>
+    <div class="header">
+      <button @click="goBack" class="back-button">↩</button>
+      <h1>RECEIPT KEEPER</h1>
+    </div>
     <p class="subtitle">Make a receipt and take care of it</p>
     <div class="login-form">
       <div class="input-group">
@@ -29,6 +32,9 @@
 export default {
   name: 'Login',
   methods: {
+    goBack() {
+      this.$router.go(-1);
+    },
     goToNaverLogin() {
       this.$router.push('/naver-login');
     },
@@ -46,6 +52,23 @@ export default {
   align-items: center;
   text-align: center;
   padding: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.back-button {
+  position: absolute;
+  left: 20px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
 }
 
 h1 {

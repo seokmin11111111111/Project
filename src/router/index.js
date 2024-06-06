@@ -12,6 +12,9 @@ import LoginView from '../views/LoginView.vue';
 import SignupView from '../views/SignupView.vue';
 import NaverLogin from '@/views/NaverLogin'
 import KakaoLogin from '@/views/KakaoLogin'
+import MonthlyView from '@/views/MonthlyView.vue';
+import StartView from '../views/StartView.vue';
+import MonthlyDetail from '@/views/MonthlyDetail.vue';
 
 
 
@@ -72,9 +75,32 @@ const routes = [
     name: 'KakaoLogin',
     component: KakaoLogin
   },
- 
+  {
+    path: '/form/:id?',
+    name: 'ReceiptForm',
+    component: ReceiptForm,
+    props: true
+  },
+  
+  {
+    path: '/monthly',
+    name: 'MonthlyView',
+    component: MonthlyView
+  },
   {
     path: '/',
+    name: 'start',
+    component: StartView
+  },
+  {
+    path: '/month/:month',
+    name: 'MonthlyDetail',
+    component: MonthlyDetail,
+    props: true
+  },
+ 
+  {
+    path: '/home',
     name: 'home',
     component: HomeView
   },
