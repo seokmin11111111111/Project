@@ -7,21 +7,18 @@
       </div>
     </div>
     <div class="main-content">
-      <p v-if="receipts.length === 0" class="no-data-message">영수증 데이터가 없습니다.<br />"+"버튼을 눌러 영수증 내역을 등록해보세요.</p>
-      <router-link v-if="receipts.length === 0" to="/form/new" class="add-button">+</router-link>
+      <div class="month-filter">
+        <label for="filter-month">월 선택:</label>
+        <input type="month" id="filter-month" v-model="filterMonth" @change="filterReceiptsByMonth" />
+      </div>
+      <p v-if="filteredReceipts.length === 0" class="no-data-message">영수증 데이터가 없습니다.<br />"+"버튼을 눌러 영수증 내역을 등록해보세요.</p>
+      <router-link v-if="filteredReceipts.length === 0" to="/form/new" class="add-button">+</router-link>
       <div v-else class="receipts-list">
         <div
-          v-for="(receipt, index) in receipts"
+          v-for="(receipt, index) in filteredReceipts"
           :key="index"
           class="receipt-item"
-          :ref="'receipt' + index"
-          @mousedown="startDrag(index, $event)"
-          @touchstart="startDrag(index, $event)"
-          @mousemove="onDrag(index, $event)"
-          @touchmove="onDrag(index, $event)"
-          @mouseup="endDrag(index, $event)"
-          @touchend="endDrag(index, $event)"
-          @mouseleave="endDrag(index, $event)"
+          @click="goToDetail(index)"
         >
           <div class="receipt-info">
             <div class="receipt-text">
@@ -30,7 +27,7 @@
               <p class="date">{{ receipt.date }}</p>
               <p class="total" v-if="receipt.totalAmount">{{ (receipt.totalAmount || 0).toLocaleString() }}원</p>
             </div>
-            <div class="trash-can" @click.stop="handleDeleteReceipt(index)"></div>
+            <button class="delete-button" @click.stop="handleDeleteReceipt(index)">삭제</button>
           </div>
         </div>
       </div>
@@ -46,9 +43,8 @@ export default {
   name: 'HomeView',
   data() {
     return {
-      draggingIndex: null,
-      startX: 0,
-      currentX: 0,
+      filterMonth: new Date().toISOString().substr(0, 7), // 현재 월을 기본값으로 설정
+      filteredReceipts: [],
     };
   },
   computed: {
@@ -58,6 +54,7 @@ export default {
     ...mapActions(['deleteReceipt']),
     handleDeleteReceipt(index) {
       this.deleteReceipt(index);
+      this.filterReceiptsByMonth(); // 삭제 후 필터링 갱신
     },
     goToDetail(index) {
       this.$router.push(`/form/${index}`);
@@ -68,35 +65,23 @@ export default {
     goToLogin() {
       this.$router.push('/login');
     },
-    startDrag(index, event) {
-      this.draggingIndex = index;
-      this.startX = event.touches ? event.touches[0].clientX : event.clientX;
-      this.currentX = this.startX;
-    },
-    onDrag(index, event) {
-      if (this.draggingIndex === index) {
-        const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-        this.currentX = clientX;
-        const translateX = Math.min(0, this.currentX - this.startX);
-        this.$refs[`receipt${index}`][0].style.transform = `translateX(${translateX}px)`;
-      }
-    },
-    endDrag(index, event) {
-      if (this.draggingIndex === index) {
-        const deltaX = this.currentX - this.startX;
-        const receiptElement = this.$refs[`receipt${index}`][0];
-        if (deltaX < -100) {
-          receiptElement.style.transform = `translateX(-100%)`;
-          receiptElement.classList.add('swiped');
-        } else {
-          receiptElement.style.transform = `translateX(0)`;
-          receiptElement.classList.remove('swiped');
-        }
-        this.draggingIndex = null;
-        this.startX = 0;
-        this.currentX = 0;
-      }
+    filterReceiptsByMonth() {
+      const month = this.filterMonth;
+      this.filteredReceipts = this.receipts
+        .filter(receipt => receipt.date.startsWith(month))
+        .sort((a, b) => new Date(a.date) - new Date(b.date)); // 날짜 오름차순 정렬
     }
+  },
+  watch: {
+    receipts: {
+      handler() {
+        this.filterReceiptsByMonth();
+      },
+      immediate: true
+    }
+  },
+  created() {
+    this.filterReceiptsByMonth();
   }
 };
 </script>
@@ -130,8 +115,7 @@ export default {
   font-size: 24px;
   color: black;
   cursor: pointer;
-  flex-grow: 1;
-  text-align: center;
+  text-align: left; /* 왼쪽 정렬 */
 }
 
 .auth-buttons {
@@ -156,6 +140,11 @@ export default {
   align-items: center;
   justify-content: center;
   flex-grow: 1;
+  padding-bottom: 80px; /* 하단 고정된 요소와 겹치지 않도록 추가 */
+}
+
+.month-filter {
+  margin-bottom: 20px;
 }
 
 .no-data-message {
@@ -173,6 +162,7 @@ export default {
   padding: 0 20px;
   box-sizing: border-box;
   align-items: center; /* 리스트를 가운데 정렬 */
+  max-height: calc(100vh - 140px); /* 스크롤 영역의 최대 높이 설정 */
 }
 
 .receipt-item {
@@ -236,19 +226,14 @@ export default {
   color: #ccc;
 }
 
-.trash-can {
-  width: 24px;
-  height: 24px;
-  background-image: url('https://search.pstatic.net/sunny/?src=https%3A%2F%2Fimg.freepik.com%2Fpremium-vector%2Ftrash-bin-icon-in-black-and-white_755164-9737.jpg&type=sc960_832');
-  background-size: cover;
+.delete-button {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
   cursor: pointer;
-  margin-left: 10px;
-  transition: opacity 0.3s ease;
-  opacity: 0;
-}
-
-.receipt-item.swiped .trash-can {
-  opacity: 1;
+  font-size: 14px;
 }
 
 .add-button {

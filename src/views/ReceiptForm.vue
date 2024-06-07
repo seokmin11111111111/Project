@@ -1,47 +1,45 @@
 <template>
   <div class="receipt-form">
-    <div class="form-header">
-      <button @click="goBack" class="back-button">↩</button>
-      <h2>{{ isEditMode ? '영수증 수정' : '영수증 작성' }}</h2>
-      <button @click="saveReceipt" class="save-button">저장</button>
-    </div>
+    <h2>{{ isEditMode ? 'Receipt Edit' : 'Receipt Entry' }}</h2>
     <div class="form-content">
       <div class="form-group">
-        <label for="amount">금액 (필수)</label>
+        <label for="amount">금액￦(필수)</label>
         <input
           v-model="formattedAmount"
           @input="formatAmount"
           type="text"
           id="amount"
-          placeholder="금액을 입력하세요"
+          placeholder="금액을 입력하세요."
           inputmode="numeric"
           pattern="[0-9,]*"
           required
         />
       </div>
       <div class="form-group">
-        <label for="date">날짜 (필수)</label>
-        <input v-model="receipt.date" type="date" id="date" required>
+        <label for="date">날짜(필수)</label>
+        <input v-model="receipt.date" type="date" id="date" @change="updateMonth" required>
       </div>
       <div class="form-group">
-        <label for="category">구분 (필수)</label>
+        <label for="category">카테고리 (필수)</label>
         <select v-model="receipt.category" id="category" required>
-          <option value="">구분 항목을 선택하세요</option>
+          <option value=""></option>
           <option v-for="(category, index) in categories" :key="index" :value="category">{{ category }}</option>
         </select>
       </div>
       <div class="form-group">
         <label for="payment">지출처</label>
-        <input v-model="receipt.payment" type="text" id="payment" placeholder="지출처를 입력하세요">
+        <input v-model="receipt.payment" type="text" id="payment" placeholder="">
       </div>
       <div class="form-group">
         <label for="item">품목</label>
-        <input v-model="receipt.item" type="text" id="item" placeholder="품목을 입력하세요">
+        <input v-model="receipt.item" type="text" id="item" placeholder="">
       </div>
       <div class="form-group">
         <label for="memo">메모</label>
-        <textarea v-model="receipt.memo" id="memo" placeholder="간단한 메모를 입력하세요"></textarea>
+        <textarea v-model="receipt.memo" id="memo" placeholder="작성하기"></textarea>
       </div>
+      <button @click="saveReceipt" class="save-button">Save</button>
+      <button @click="goBack" class="back-button">Back</button>
     </div>
   </div>
 </template>
@@ -59,9 +57,10 @@ export default {
         category: '',
         payment: '',
         item: '',
-        memo: ''
+        memo: '',
+        month: ''
       },
-      categories: ['식비', '교통비', '주거비', '기타'], // 샘플 카테고리
+      categories: [] // Initialize categories as empty array
     };
   },
   computed: {
@@ -90,7 +89,7 @@ export default {
       } else {
         this.addReceipt(this.receipt);
       }
-      this.$router.push('/home'); // 여기서 홈 뷰로 이동
+      this.$router.push('/home'); // Navigate to home view
     },
     setReceiptData() {
       if (this.currentReceipt) {
@@ -106,7 +105,8 @@ export default {
         category: '',
         payment: '',
         item: '',
-        memo: ''
+        memo: '',
+        month: ''
       };
     },
     goBack() {
@@ -117,6 +117,20 @@ export default {
       if (!isNaN(value)) {
         this.formattedAmount = parseInt(value, 10).toLocaleString();
       }
+    },
+    loadCategories() {
+      const storedCategories = JSON.parse(localStorage.getItem('categories'));
+      if (storedCategories) {
+        this.categories = storedCategories;
+      }
+    },
+    updateMonth() {
+      if (this.receipt.date) {
+        const date = new Date(this.receipt.date);
+        const month = date.getMonth() + 1; // months are zero-indexed
+        const year = date.getFullYear();
+        this.receipt.month = `${year}-${month < 10 ? '0' + month : month}`; // format as YYYY-MM
+      }
     }
   },
   watch: {
@@ -124,63 +138,44 @@ export default {
   },
   created() {
     this.setReceiptData();
+    this.loadCategories(); // Load categories on component creation
   }
 };
 </script>
 
 <style scoped>
 .receipt-form {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  justify-content: flex-start;
-  align-items: center;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.form-header {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background-color: #f5f5f5;
-}
-
-.form-header h2 {
-  margin: 0;
-  font-size: 20px;
-}
-
-.form-header .back-button {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.form-header .save-button {
-  padding: 5px 10px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
+h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+  text-align: center;
 }
 
 .form-content {
-  width: 100%;
-  padding: 20px;
-  box-sizing: border-box;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 20px; /* 추가된 여유 공간 */
 }
 
 .form-group {
   margin-bottom: 15px;
-  position: relative;
 }
 
 .form-group label {
   display: block;
   margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
 }
 
 .form-group input,
@@ -188,13 +183,35 @@ export default {
 .form-group textarea {
   width: 100%;
   padding: 10px;
-  box-sizing: border-box;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 16px;
 }
 
 .form-group textarea {
   resize: vertical;
   height: 100px;
+}
+
+.save-button,
+.back-button {
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.save-button {
+  background-color: #007bff;
+  color: white;
+  margin-bottom: 10px; /* 저장 버튼과 뒤로 가기 버튼 간격 */
+}
+
+.back-button {
+  background-color: grey;
+  color: white;
 }
 </style>

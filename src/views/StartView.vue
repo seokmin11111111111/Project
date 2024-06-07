@@ -5,7 +5,11 @@
       <span class="animated-text">of the</span>
       <span class="animated-text highlight">receipt!</span>
     </h1>
-    <router-link to="/home" class="start-button">시작하기</router-link>
+    <router-link to="/home" class="start-button">
+      <span class="button-text">시작하기</span>
+    </router-link>
+    
+    
   </div>
 </template>
 
@@ -98,15 +102,59 @@ h1 .highlight {
 }
 
 .start-button {
-  margin-top: 20px;
   padding: 10px 20px;
   font-size: 18px;
-  color: white;
-  background-color: #4a90e2;
-  border: none;
-  border-radius: 10px;
+  color: #fff;
+  background-color: #007bff;
+  border: 2px solid #007bff; /* 파란색 테두리 추가 */
+  border-radius: 5px;
   text-decoration: none;
-  cursor: pointer;
-  animation: sparkle 1.5s infinite;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.start-button:hover {
+  background-color: #0056b3;
+  color: #fff;
+}
+
+.button-text {
+  position: relative;
+  z-index: 1;
+}
+
+.start-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: skewX(-20deg);
+  animation: slide 2s infinite;
+}
+
+@keyframes slide {
+  0% {
+    left: -50%;
+  }
+  50% {
+    left: 150%;
+  }
+  100% {
+    left: -50%;
+  }
+}
+
+/* 추가된 스타일 */
+.start-view .list-button,
+.start-view .stats-button,
+.start-view .settings-button {
+  display: none;
 }
 </style>

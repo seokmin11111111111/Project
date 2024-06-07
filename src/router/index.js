@@ -8,8 +8,8 @@ import CategoryListView from '../views/CategoryListView.vue';
 import AddCategoryView from '../views/AddCategoryView.vue';
 import AccountListView from '../views/AccountListView.vue';
 import AddAccountView from '../views/AddAccountView.vue';
-import LoginView from '../views/LoginView.vue';
-import SignupView from '../views/SignupView.vue';
+import SignIn from '@/views/SignIn.vue';
+import Register from '@/views/Register.vue';
 import NaverLogin from '@/views/NaverLogin'
 import KakaoLogin from '@/views/KakaoLogin'
 import MonthlyView from '@/views/MonthlyView.vue';
@@ -58,13 +58,14 @@ const routes = [
   {
     path: '/login',
     name: 'login',
-    component: LoginView
+    component: SignIn,
   },
   {
-    path: '/signup',
-    name: 'signup',
-    component: SignupView
+    path: '/register',
+    name: 'register',
+    component: Register,
   },
+  
   {
     path: '/naver-login',
     name: 'NaverLogin',

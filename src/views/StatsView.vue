@@ -9,6 +9,14 @@
       <input type="date" v-model="endDate" @change="updateDate" />
       <span>{{ startDate }} ~ {{ endDate }}</span>
     </div>
+    <div v-if="startDate && endDate" class="overall-summary">
+      <h4>카테고리별 총 지출</h4>
+      <div v-for="(amount, category) in categoryTotalAmounts" :key="category" class="summary-item">
+        <div class="color-box" :style="{ backgroundColor: getCategoryColor(category) }"></div>
+        <div class="label">{{ category }}</div>
+        <div class="amount">{{ amount.toLocaleString() }}원</div>
+      </div>
+    </div>
     <div v-if="startDate && endDate">
       <div v-for="(monthData, month) in sortedFilteredMonthlyData" :key="month" class="monthly-section">
         <h4>{{ month }}</h4>
@@ -17,7 +25,7 @@
         </div>
         <div class="list">
           <div v-for="(amount, category) in getCategoryAmounts(monthData)" :key="category" class="list-item">
-            <div class="color-box" :style="{ backgroundColor: categoryColors[category] }"></div>
+            <div class="color-box" :style="{ backgroundColor: getCategoryColor(category) }"></div>
             <div class="label">{{ category }}</div>
             <div class="amount">{{ amount.toLocaleString() }}원</div>
           </div>
@@ -58,7 +66,11 @@ export default {
         '식비': '#ff6384',
         '교통비': '#36a2eb',
         '주거비': '#cc65fe',
-        '기타': '#ffce56'
+        '기타': '#ffce56',
+        '의류': '#ffa500',
+        '엔터테인먼트': '#8a2be2',
+        '의료': '#ff4500',
+        '교육': '#7fffd4'
       }
     };
   },
@@ -119,10 +131,33 @@ export default {
         lastMonthData[currentMonth] = this.sortedFilteredMonthlyData[lastMonth] || [];
       }
       return lastMonthData;
+    },
+    categoryTotalAmounts() {
+      const amounts = {};
+      this.filteredReceipts.forEach(receipt => {
+        if (!amounts[receipt.category]) {
+          amounts[receipt.category] = 0;
+        }
+        amounts[receipt.category] += parseInt(receipt.amount, 10);
+      });
+      return amounts;
+    },
+    chartOptions() {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      };
     }
   },
   methods: {
     updateDate() {
+      localStorage.setItem('startDate', this.startDate);
+      localStorage.setItem('endDate', this.endDate);
       console.log(`Selected Date Range: ${this.startDate} - ${this.endDate}`);
     },
     getCategoryAmounts(receipts) {
@@ -137,13 +172,18 @@ export default {
     },
     getChartData(receipts) {
       const categoryAmounts = this.getCategoryAmounts(receipts);
+      const labels = Object.keys(categoryAmounts);
+      const data = Object.values(categoryAmounts);
+      const backgroundColor = labels.map(category => this.getCategoryColor(category));
+      const hoverBackgroundColor = labels.map(category => this.getCategoryColor(category));
+
       return {
-        labels: Object.keys(categoryAmounts),
+        labels,
         datasets: [
           {
-            data: Object.values(categoryAmounts),
-            backgroundColor: Object.keys(categoryAmounts).map(category => this.categoryColors[category]),
-            hoverBackgroundColor: Object.keys(categoryAmounts).map(category => this.categoryColors[category])
+            data,
+            backgroundColor,
+            hoverBackgroundColor
           }
         ]
       };
@@ -160,26 +200,37 @@ export default {
       });
       return comparison;
     },
-    chartOptions() {
-      return {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom'
-          }
-        }
-      };
-    },
     goBack() {
       this.$router.go(-1);
+    },
+    getRandomColor() {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    },
+    getCategoryColor(category) {
+      if (!this.categoryColors[category]) {
+        const storedColors = JSON.parse(localStorage.getItem('categoryColors') || '{}');
+        if (storedColors[category]) {
+          this.categoryColors[category] = storedColors[category];
+        } else {
+          this.categoryColors[category] = this.getRandomColor();
+          storedColors[category] = this.categoryColors[category];
+          localStorage.setItem('categoryColors', JSON.stringify(storedColors));
+        }
+      }
+      return this.categoryColors[category];
     }
   },
   created() {
-    if (this.receipts.length > 0) {
-      const sortedReceipts = [...this.receipts].sort((a, b) => new Date(a.date) - new Date(b.date));
-      this.startDate = sortedReceipts[0].date.substr(0, 10);
-      this.endDate = sortedReceipts[sortedReceipts.length - 1].date.substr(0, 10);
+    const storedStartDate = localStorage.getItem('startDate');
+    const storedEndDate = localStorage.getItem('endDate');
+    if (storedStartDate && storedEndDate) {
+      this.startDate = storedStartDate;
+      this.endDate = storedEndDate;
     }
   }
 };
@@ -187,17 +238,20 @@ export default {
 
 <style scoped>
 .container {
-  width: 375px;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
-  padding-top: 20px;
+  padding: 80px 20px 80px;
   box-sizing: border-box;
   font-family: Arial, sans-serif;
 }
+
 .header {
   text-align: center;
   margin-bottom: 20px;
   position: relative;
 }
+
 .back-button {
   position: absolute;
   left: 20px;
@@ -207,78 +261,127 @@ export default {
   font-size: 24px;
   cursor: pointer;
 }
+
 .stats {
   text-align: center;
   margin-bottom: 20px;
 }
+
 .stats span {
   display: block;
 }
+
 .stats input[type="date"] {
   margin-bottom: 10px;
   padding: 5px;
   font-size: 14px;
 }
+
+.overall-summary {
+  margin-bottom: 40px;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.summary-item .color-box {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
+
+.summary-item .label {
+  flex: 1;
+  color: #4f4f4f;
+}
+
+.summary-item .amount {
+  color: #4f4f4f;
+}
+
 .monthly-section {
   margin-bottom: 40px;
 }
+
 .chart {
   position: relative;
   width: 200px;
   height: 200px;
   margin: 20px auto;
 }
+
 .list {
   border: 1px solid #dcdcdc;
   border-radius: 10px;
   padding: 10px;
 }
+
 .list-item {
   display: flex;
   align-items: center;
   padding: 10px 0;
 }
+
 .list-item .color-box {
   width: 20px;
   height: 20px;
   margin-right: 10px;
 }
+
 .list-item .label {
   flex: 1;
   color: #4f4f4f;
 }
+
 .list-item .amount {
   color: #4f4f4f;
 }
+
 .list-item.total {
   font-weight: bold;
 }
+
 .savings {
   background-color: #e0ffe0;
   border-radius: 10px;
   padding: 10px;
   margin-top: 10px;
 }
+
 .savings h4 {
   margin: 0 0 10px 0;
 }
+
 .savings .list-item {
   padding: 5px 0;
 }
+
 .footer {
   display: flex;
   justify-content: space-around;
-  margin-top: 20px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px 0;
 }
+
 .footer-button {
   text-align: center;
 }
+
 .footer-button img {
   display: block;
   margin: 0 auto;
   width: 24px;
   height: 24px;
 }
+
 .footer-button span {
   font-size: 12px;
 }

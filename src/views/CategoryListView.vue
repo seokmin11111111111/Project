@@ -5,8 +5,13 @@
       <h2>구분 리스트</h2>
     </div>
     <div class="content">
+      <button class="new-folder-button" @click="addCategory">
+        <img src="https://search.pstatic.net/sunny/?src=https%3A%2F%2Fimage.pngaaa.com%2F556%2F6289556-middle.png&type=sc960_832" alt="new folder icon" class="new-folder-icon">
+        New Folder
+      </button>
       <div v-for="(category, index) in categories" :key="index" class="category-item">
         <div class="category-item-content">
+          <input type="checkbox" class="checkbox"/>
           <span @click="selectCategory(category)">{{ category }}</span>
           <button @click="deleteCategory(index)" class="delete-button">
             <img src="https://search.pstatic.net/sunny/?src=https%3A%2F%2Fpng.pngtree.com%2Fpng-vector%2F20230222%2Fourmid%2Fpngtree-trash-line-icon-png-image_6614583.png&type=sc960_832" alt="휴지통 아이콘" class="icon">
@@ -14,7 +19,6 @@
         </div>
       </div>
     </div>
-    <router-link to="/categories/add" class="add-button">+</router-link>
   </div>
 </template>
 
@@ -37,6 +41,14 @@ export default {
 
     const saveCategories = () => {
       localStorage.setItem('categories', JSON.stringify(categories.value));
+    };
+
+    const addCategory = () => {
+      const newCategory = prompt('Enter new category:');
+      if (newCategory) {
+        categories.value.push(newCategory);
+        saveCategories();
+      }
     };
 
     const deleteCategory = (index) => {
@@ -64,6 +76,7 @@ export default {
     return {
       categories,
       goBack,
+      addCategory,
       deleteCategory,
       selectCategory
     };
@@ -84,82 +97,96 @@ export default {
 .header {
   width: 100%;
   padding: 20px;
-  padding-right: 60px; /* Ensure space for the add button */
   background-color: #f5f5f5;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header h2 {
   margin: 0;
   font-size: 24px;
-  width: 100%; /* 가로 길이 100%로 설정 */
-  max-width: 800px; /* 최대 가로 길이 설정 */
-  margin: 0 300px; /* 양 옆의 여백을 균등하게 설정 */
-}
-
-.back-button, .add-button {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
 }
 
 .back-button {
   font-size: 24px;
   color: #000000;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
-.add-button {
-  font-size: 32px;
-  font-weight: bold;
-  position: absolute;
-  top: 20px; /* Align with the header's top padding */
-  right: -50px; /* Align with the header's right padding */
-  background-color: #007bff; /* Background color */
-  color: white; /* White text */
-  border-radius: 50%; /* Round button */
-  width: 40px;
-  height: 40px;
+.new-folder-button {
   display: flex;
-  justify-content: center;
   align-items: center;
-  text-decoration: none;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  margin: 20px 0;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.new-folder-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
 }
 
 .content {
   width: 100%;
   padding: 20px;
+  padding-top: 80px; /* Add top padding to avoid overlap with header */
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  overflow-y: auto; /* Enable vertical scrolling */
 }
 
 .category-item {
   background-color: #ffffff;
-  border-radius: 10px;
-  padding: 15px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  padding: 10px;
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
 }
 
 .category-item-content {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  width: 100%;
 }
 
 .category-item span {
+  flex-grow: 1;
   cursor: pointer;
+  margin-left: 10px;
+}
+
+.checkbox {
+  margin-right: 10px;
 }
 
 .delete-button {
   background: none;
   border: none;
-  color: #ff4d4d;
-  font-size: 20px;
   cursor: pointer;
+  margin-left: 10px;
 }
 
 .icon {
