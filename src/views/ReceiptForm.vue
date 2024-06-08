@@ -38,7 +38,7 @@
         <label for="memo">메모</label>
         <textarea v-model="receipt.memo" id="memo" placeholder="작성하기"></textarea>
       </div>
-      <button @click="saveReceipt" class="save-button">Save</button>
+      <button @click="saveReceipt" class="save-button">저장하기</button>
       <button @click="goBack" class="back-button">Back</button>
     </div>
   </div>
@@ -184,7 +184,7 @@ h2 {
   width: 100%;
   padding: 10px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 20px; /* 입력 필드, 선택 박스, 텍스트 영역 둥글게 */
   box-sizing: border-box;
   font-size: 16px;
 }
@@ -198,7 +198,7 @@ h2 {
 .back-button {
   padding: 10px;
   border: none;
-  border-radius: 4px;
+  border-radius: 20px; /* 버튼 둥글게 */
   font-size: 16px;
   cursor: pointer;
   margin-top: 10px;
@@ -210,8 +210,16 @@ h2 {
   margin-bottom: 10px; /* 저장 버튼과 뒤로 가기 버튼 간격 */
 }
 
+.save-button:hover {
+  background-color: #0056b3; /* 호버 색상 추가 */
+}
+
 .back-button {
   background-color: grey;
   color: white;
+}
+
+.back-button:hover {
+  background-color: #555; /* 호버 색상 추가 */
 }
 </style>

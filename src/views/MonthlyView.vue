@@ -7,11 +7,13 @@
         <div v-for="(receipt, index) in receipts" :key="index" class="receipt-item">
           <div class="receipt-info">
             <span class="receipt-payment">{{ receipt.payment }}</span>
-            <span class="receipt-amount">{{ (receipt.amount || 0).toLocaleString() }}원</span>
+            <span :class="{'receipt-amount positive': receipt.amount >= 0, 'receipt-amount negative': receipt.amount < 0}">
+              {{ receipt.amount >= 0 ? '+' : '-' }}{{ Math.abs(receipt.amount).toLocaleString() }}원
+            </span>
           </div>
           <div class="receipt-details">
             <span class="receipt-date">{{ receipt.date }}</span>
-            <span v-if="receipt.totalAmount" class="receipt-total">{{ (receipt.totalAmount || 0).toLocaleString() }}원</span>
+            <span v-if="receipt.totalAmount" class="receipt-total">{{ receipt.totalAmount.toLocaleString() }}원</span>
           </div>
         </div>
         <div class="monthly-total">
@@ -94,6 +96,9 @@ export default {
   margin-bottom: 10px;
   width: 100%;
   display: block;
+  width: 100%; /* 가로 길이 100%로 설정 */
+  max-width: 800px; /* 최대 가로 길이 설정 */
+  margin: 0 300px; /* 양 옆의 여백을 균등하게 설정 */
 }
 
 .receipt-list {
@@ -108,29 +113,44 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 15px;
   margin-bottom: 10px;
-  border-left: 5px solid #007bff; 
+  border-left: 5px solid; 
   width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .receipt-info {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-weight: bold;
-  margin-bottom: 5px;
+  flex-grow: 1;
 }
 
 .receipt-payment {
   color: #333;
+  flex-grow: 1;
 }
 
 .receipt-amount {
-  color: #333;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+
+.receipt-amount.positive {
+  color: green;
+}
+
+.receipt-amount.negative {
+  color: red;
 }
 
 .receipt-details {
   display: flex;
   justify-content: space-between;
   color: #888;
+  flex-direction: column;
 }
 
 .receipt-date {

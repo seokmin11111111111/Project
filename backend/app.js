@@ -1,46 +1,42 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+// app.js
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const express = require('express');
+const bodyParser = require('body-parser');
+const mysql = require('mysql');
+const bcrypt = require('bcrypt');
+const cors = require('cors');
 
-var app = express();
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-var { Sequelize } = require('sequelize');
-var sequelize = new Sequelize("ysm", "root", "zxcv0954z@", {
-  host: "localhost",
-  dialect: "mysql"
-})
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'zxcv0954z@',
+  database: 'auth_db'
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+db.connect((err) => {
+  if (err) throw err;
+  console.log('Connected to database');
+});
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+app.post('/register', (req, res) => {
+  const { email, password, firstName, lastName, phoneNumber, address } = req.body;
+
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  const insertUserQuery = 'INSERT INTO users (email, password, first_name, last_name, phone_number, address) VALUES (?, ?, ?, ?, ?, ?)';
+  db.query(insertUserQuery, [email, hashedPassword, firstName, lastName, phoneNumber, address], (err, results) => {
+    if (err) {
+      console.error('Database insert error:', err);
+      res.status(500).send({ message: 'Database insert error' });
+      return;
+    }
+
+    res.send({ message: 'User registered successfully', userId: results.insertId });
+  });
 });
 
 module.exports = app;

@@ -3,7 +3,8 @@
     <div v-if="showHeader" class="header">
       <h1 @click="refreshPage">RECEIPT KEEPER</h1>
       <div class="auth-buttons">
-        <button class="auth-button" @click="goToLogin">로그인</button>
+        <button v-if="!isAuthenticated" class="auth-button" @click="goToLogin">로그인</button>
+        <button v-else class="auth-button" @click="handleLogout">로그아웃</button>
       </div>
     </div>
     <transition name="fade" mode="out-in">
@@ -32,6 +33,8 @@
 </template>
 
 <script>
+import { mapGetters, mapActions } from 'vuex';
+
 export default {
   data() {
     return {
@@ -39,6 +42,9 @@ export default {
       showFooter: true,
       showFooterButtons: true // 새로운 상태 변수 추가
     };
+  },
+  computed: {
+    ...mapGetters(['isAuthenticated'])
   },
   watch: {
     $route(to) {
@@ -49,10 +55,15 @@ export default {
     }
   },
   methods: {
+    ...mapActions(['logout']),
     refreshPage() {
       window.location.reload();
     },
     goToLogin() {
+      this.$router.push('/login');
+    },
+    async handleLogout() {
+      await this.logout();
       this.$router.push('/login');
     }
   },
@@ -189,5 +200,4 @@ export default {
   z-index: 1000;
   cursor: pointer;
 }
-
 </style>

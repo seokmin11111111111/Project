@@ -1,21 +1,47 @@
 <template>
   <div class="start-view">
     <h1 class="animated-texts">
-      <span class="animated-text">Make a note</span>
-      <span class="animated-text">of the</span>
-      <span class="animated-text highlight">receipt!</span>
+      <span class="animated-text" :class="{ show: showFirst }">Make a note</span>
+      <span class="animated-text" :class="{ show: showSecond }">of the</span>
+      <span class="animated-text highlight" :class="{ show: showThird }">receipt!</span>
     </h1>
     <router-link to="/home" class="start-button">
       <span class="button-text">시작하기</span>
     </router-link>
-    
-    
   </div>
 </template>
 
 <script>
 export default {
-  name: 'StartView'
+  name: 'StartView',
+  data() {
+    return {
+      showFirst: false,
+      showSecond: false,
+      showThird: false,
+    };
+  },
+  mounted() {
+    this.animateText();
+    setInterval(this.animateText, 4000); // 전체 애니메이션 반복
+  },
+  methods: {
+    animateText() {
+      this.showFirst = this.showSecond = this.showThird = false;
+      setTimeout(() => {
+        this.showFirst = true;
+      }, 0);
+      setTimeout(() => {
+        this.showSecond = true;
+      }, 500);
+      setTimeout(() => {
+        this.showThird = true;
+      }, 1000);
+      setTimeout(() => {
+        this.showFirst = this.showSecond = this.showThird = false;
+      }, 3000);
+    },
+  },
 };
 </script>
 
@@ -25,26 +51,9 @@ export default {
     opacity: 0;
     transform: translateY(20px);
   }
-  33% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  66% {
-    opacity: 1;
-    transform: translateY(0);
-  }
   100% {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-}
-
-@keyframes sparkle {
-  0%, 100% {
-    box-shadow: 0 0 10px rgba(74, 144, 226, 0.7), 0 0 20px rgba(74, 144, 226, 0.5), 0 0 30px rgba(74, 144, 226, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(74, 144, 226, 0.9), 0 0 30px rgba(74, 144, 226, 0.7), 0 0 40px rgba(74, 144, 226, 0.5);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -65,6 +74,7 @@ h1 {
 
 h1 span {
   display: block;
+  opacity: 0; /* 초기 상태를 보이지 않게 설정 */
 }
 
 h1 .highlight {
@@ -72,33 +82,11 @@ h1 .highlight {
 }
 
 .animated-texts {
-  animation: textFade 6s infinite;
+  animation: textFade 4s infinite;
 }
 
-.animated-text {
-  opacity: 0;
-  animation: fadeInUp 2s infinite;
-}
-
-.animated-text:nth-child(1) {
-  animation-delay: 0s;
-}
-
-.animated-text:nth-child(2) {
-  animation-delay: 2s;
-}
-
-.animated-text:nth-child(3) {
-  animation-delay: 4s;
-}
-
-@keyframes textFade {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 1;
-  }
+.animated-text.show {
+  animation: fadeInUp 0.5s forwards;
 }
 
 .start-button {
@@ -115,6 +103,7 @@ h1 .highlight {
   justify-content: center;
   position: relative;
   overflow: hidden;
+  margin-top: 20px; /* 버튼과 텍스트 사이에 간격 추가 */
 }
 
 .start-button:hover {

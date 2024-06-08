@@ -10,7 +10,6 @@
         <router-link to="/accounts" class="settings-item">지출처 목록 조회</router-link>
       </div>
       <div class="settings-group">
-        <button class="settings-item" @click="toggleTheme">스타일: {{ isDarkMode ? '다크 모드' : '라이트 모드' }}</button>
         <router-link to="/privacy" class="settings-item">로그아웃</router-link>
       </div>
     </div>
@@ -64,7 +63,6 @@ export default {
   align-items: center;
   background-color: white;
   color: black;
-  
 }
 
 .settings-view.dark {
@@ -82,24 +80,12 @@ export default {
   position: relative;
 }
 
-.header.dark {
-
-}
-
 .header h2 {
   margin: 0;
   font-size: 24px;
-  width: 100%; /* 가로 길이 100%로 설정 */
-  max-width: 800px; /* 최대 가로 길이 설정 */
-  margin: 0 300px; /* 양 옆의 여백을 균등하게 설정 */
-}
-
-.settings-title {
-  background-color: #007bff;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 37.5px; /* 둥근 테두리 */
-  
+  width: 100%;
+  max-width: 800px;
+  margin: 0 300px;
 }
 
 .back-button {
@@ -131,21 +117,20 @@ export default {
 .settings-item {
   display: block;
   padding: 15px;
-  color: rgb(0, 0, 0); /* 텍스트 색상 화이트 */
-  background-color: #ffffff; /* 배경 색상 */
+  color: black;
+  background-color: white;
   text-decoration: none;
   text-align: center;
-  border-radius: 37.5px; /* 둥근 테두리 */
+  border-radius: 37.5px;
   cursor: pointer;
-  
 }
 
 .settings-item.dark {
   color: white;
-  background-color: #007bff; /* 다크 모드에서도 같은 배경 색상 */
+  background-color: #007bff;
 }
 
 .settings-item:hover {
-  background-color: #afcbe8; /* 호버 시 색상 변경 */
+  background-color: #afcbe8;
 }
 </style>

@@ -2,7 +2,9 @@ import { createStore } from 'vuex';
 
 export default createStore({
   state: {
-    receipts: JSON.parse(localStorage.getItem('receipts')) || []
+    receipts: JSON.parse(localStorage.getItem('receipts')) || [],
+    isAuthenticated: false,
+    userId: null
   },
   mutations: {
     ADD_RECEIPT(state, receipt) {
@@ -16,6 +18,14 @@ export default createStore({
     DELETE_RECEIPT(state, index) {
       state.receipts.splice(index, 1);
       localStorage.setItem('receipts', JSON.stringify(state.receipts));
+    },
+    SET_AUTH(state, payload) {
+      state.isAuthenticated = payload.isAuthenticated;
+      state.userId = payload.userId;
+    },
+    LOGOUT(state) {
+      state.isAuthenticated = false;
+      state.userId = null;
     }
   },
   actions: {
@@ -27,6 +37,12 @@ export default createStore({
     },
     deleteReceipt({ commit }, index) {
       commit('DELETE_RECEIPT', index);
+    },
+    login({ commit }, userId) {
+      commit('SET_AUTH', { isAuthenticated: true, userId });
+    },
+    logout({ commit }) {
+      commit('LOGOUT');
     }
   },
   getters: {
@@ -41,6 +57,8 @@ export default createStore({
         acc[month].push(receipt);
         return acc;
       }, {});
-    }
+    },
+    isAuthenticated: state => state.isAuthenticated,
+    userId: state => state.userId
   }
 });
