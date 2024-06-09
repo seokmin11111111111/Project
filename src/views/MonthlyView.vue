@@ -16,7 +16,6 @@
         <h2>{{ remainingLimitAfterUsage.toLocaleString() }} 원</h2>
       </div>
     </div>
-    <button @click="viewCardUsage" class="usage-button">카드사용내역</button>
     <div class="limit-setting">
       <h3 @click="toggleLimitSetting" class="limit-setting-toggle">잔여 한도 설정하기</h3>
       <div v-if="showLimitSetting" class="limit-setting-form">
@@ -24,28 +23,53 @@
         <button @click="setLimit" class="set-limit-button">설정</button>
       </div>
     </div>
+    <button @click="toggleCardUsage" class="view-usage-button">카드사용내역</button>
+    <div v-if="showCardUsage" class="card-usage">
+      <h2>Transactions</h2>
+      <div class="transaction" v-for="transaction in transactions" :key="transaction.id">
+        <div class="transaction-details">
+          <p class="transaction-name">{{ transaction.payment }}</p>
+          <p class="transaction-date">{{ transaction.date }}</p>
+        </div>
+        <div class="transaction-amount">
+          <p>{{ transaction.amount ? transaction.amount.toLocaleString() : 0 }} 원</p>
+          <p class="transaction-balance">{{ transaction.totalAmount ? transaction.totalAmount.toLocaleString() : 0 }} 원</p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex';
-
 export default {
   name: 'MonthlyView',
+  props: {
+    transactions: {
+      type: Array,
+      required: true,
+      default: () => []
+    }
+  },
   data() {
     return {
       cardImageUrl: 'https://search.pstatic.net/sunny/?src=https%3A%2F%2Fobj-kr.the1.wiki%2Fd%2F31%2Fb2%2F55800c2b8099e6bb4c959a442f5f20fabd6f3f592b2cbb0ae69a43d557f2b5c1.png&type=sc960_832',
       newLimit: 0,
       showLimitSetting: false,
-      currentMonth: new Date() // 현재 월을 저장
+      showCardUsage: false,
+      currentMonth: new Date(), // 현재 월을 저장
+      remainingLimit: 0, // 잔여 한도를 데이터로 저장
     };
   },
   computed: {
-    ...mapGetters(['getTotalAmountByMonth']),
     thisMonthUsage() {
       const year = this.currentMonth.getFullYear();
       const month = this.currentMonth.getMonth() + 1;
-      return this.getTotalAmountByMonth(year, month);
+      return this.transactions
+        .filter(transaction => {
+          const transactionDate = new Date(transaction.date);
+          return transactionDate.getFullYear() === year && transactionDate.getMonth() + 1 === month;
+        })
+        .reduce((total, transaction) => total + (transaction.amount || 0), 0);
     },
     formattedNewLimit: {
       get() {
@@ -61,19 +85,21 @@ export default {
       const month = this.currentMonth.getMonth() + 1;
       return `${year}년 ${month < 10 ? '0' + month : month}월`;
     },
-    remainingLimit() {
-      const yearMonth = `${this.currentMonth.getFullYear()}-${this.currentMonth.getMonth() + 1}`;
-      const storedLimit = localStorage.getItem(`remainingLimit-${yearMonth}`);
-      return storedLimit !== null ? Number(storedLimit) : 0;
-    },
     remainingLimitAfterUsage() {
       return this.remainingLimit - this.thisMonthUsage;
     }
   },
+  watch: {
+    currentMonth: {
+      immediate: true,
+      handler() {
+        this.updateRemainingLimit();
+      }
+    }
+  },
   methods: {
-    ...mapActions(['saveRemainingLimit']),
-    viewCardUsage() {
-      alert('카드 사용내역 보기');
+    toggleCardUsage() {
+      this.showCardUsage = !this.showCardUsage;
     },
     toggleLimitSetting() {
       this.showLimitSetting = !this.showLimitSetting;
@@ -83,6 +109,7 @@ export default {
       localStorage.setItem(`remainingLimit-${yearMonth}`, this.newLimit);
       alert(`잔여 한도가 ${this.newLimit.toLocaleString()} 원으로 설정되었습니다.`);
       this.showLimitSetting = false;
+      this.updateRemainingLimit(); // 잔여 한도를 업데이트
     },
     formatNewLimit(event) {
       const value = event.target.value.replace(/[^0-9]/g, '');
@@ -93,6 +120,11 @@ export default {
     },
     nextMonth() {
       this.currentMonth = new Date(this.currentMonth.setMonth(this.currentMonth.getMonth() + 1));
+    },
+    updateRemainingLimit() {
+      const yearMonth = `${this.currentMonth.getFullYear()}-${this.currentMonth.getMonth() + 1}`;
+      const storedLimit = localStorage.getItem(`remainingLimit-${yearMonth}`);
+      this.remainingLimit = storedLimit !== null ? Number(storedLimit) : 0;
     }
   }
 };
@@ -115,6 +147,7 @@ html, body {
   flex-direction: column;
   align-items: center;
   padding: 20px;
+  padding-bottom: 80px; /* 버튼에 가려지지 않도록 패딩 추가 */
   background-color: #f9f9f9;
   border-radius: 10px;
   height: 100%;
@@ -173,7 +206,7 @@ html, body {
   color: #333;
 }
 
-.usage-button {
+.usage-button, .view-usage-button {
   display: block;
   width: 50%; /* 너비를 줄여서 화면 중앙 정렬 */
   max-width: 200px; /* 최대 너비 설정 */
@@ -188,7 +221,7 @@ html, body {
   text-align: center;
 }
 
-.usage-button:hover {
+.usage-button:hover, .view-usage-button:hover {
   background-color: #0056b3;
 }
 
@@ -230,5 +263,58 @@ html, body {
 
 .limit-setting .set-limit-button:hover {
   background-color: #0056b3;
+}
+
+.card-usage {
+  width: 100%;
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-usage h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.transaction {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.transaction:last-child {
+  border-bottom: none;
+}
+
+.transaction-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.transaction-name {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.transaction-date {
+  font-size: 14px;
+  color: #999;
+}
+
+.transaction-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.transaction-amount p {
+  margin: 0;
+}
+
+.transaction-balance {
+  color: #999;
 }
 </style>

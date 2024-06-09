@@ -240,8 +240,9 @@ export default {
   background-color: #dfeff6;
   position: relative;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 800px;
+  width: 300%;
+  max-width: 1200px; /* 목록 너비를 넓힙니다 */
+  
 }
 
 .receipt-info {
