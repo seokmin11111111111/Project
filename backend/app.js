@@ -1,5 +1,3 @@
-// app.js
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
@@ -23,6 +21,7 @@ db.connect((err) => {
   console.log('Connected to database');
 });
 
+// 회원가입 엔드포인트
 app.post('/register', (req, res) => {
   const { email, password, firstName, lastName, phoneNumber, address } = req.body;
 
@@ -36,6 +35,35 @@ app.post('/register', (req, res) => {
     }
 
     res.send({ message: 'User registered successfully', userId: results.insertId });
+  });
+});
+
+// 로그인 엔드포인트
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+  const findUserQuery = 'SELECT * FROM users WHERE email = ?';
+  db.query(findUserQuery, [email], (err, results) => {
+    if (err) {
+      console.error('Database select error:', err);
+      res.status(500).send({ message: 'Database select error' });
+      return;
+    }
+
+    if (results.length === 0) {
+      res.status(401).send({ message: 'Invalid email or password' });
+      return;
+    }
+
+    const user = results[0];
+    const isPasswordValid = bcrypt.compareSync(password, user.password);
+
+    if (!isPasswordValid) {
+      res.status(401).send({ message: 'Invalid email or password' });
+      return;
+    }
+
+    res.send({ message: 'Login successful', userId: user.id });
   });
 });
 

@@ -26,7 +26,7 @@ export default {
       lastName: '',
       phoneNumber: '',
       address: '',
-      message: '' // 메시지 데이터 추가
+      message: ''
     };
   },
   methods: {
@@ -58,7 +58,6 @@ export default {
           const data = await response.json();
           this.message = data.message;
           alert(`User registered successfully with ID: ${data.userId}`);
-          // 회원가입 성공 후 성공 페이지로 이동
           this.$router.push('/register/success');
         } else {
           const errorText = await response.text();

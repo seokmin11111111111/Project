@@ -1,74 +1,44 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const db = require('./db'); // db.js 파일을 올바르게 경로로 설정
-const bcrypt = require('bcrypt');
+const cors = require('cors');
 const app = express();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
-// 회원가입 엔드포인트
+app.use(bodyParser.json());
+app.use(cors());
+
+const users = []; // 임시 사용자 저장소
+
+// 회원가입
 app.post('/register', (req, res) => {
   const { email, password, firstName, lastName, phoneNumber, address } = req.body;
 
-  // 이메일 중복 체크
-  const checkEmailQuery = 'SELECT * FROM users WHERE email = ?';
-  db.query(checkEmailQuery, [email], (err, results) => {
-    if (err) {
-      console.error('Database query error:', err);
-      res.status(500).send({ message: 'Database query error' });
-      return;
-    }
+  const user = {
+    id: users.length + 1,
+    email,
+    password,
+    firstName,
+    lastName,
+    phoneNumber,
+    address
+  };
 
-    if (results.length > 0) {
-      res.status(400).send({ message: 'Email already exists' });
-      return;
-    }
-
-    // 이메일 중복이 아니면 회원가입 진행
-    const hashedPassword = bcrypt.hashSync(password, 10);
-    const insertUserQuery = 'INSERT INTO users (email, password, first_name, last_name, phone_number, address) VALUES (?, ?, ?, ?, ?, ?)';
-    db.query(insertUserQuery, [email, hashedPassword, firstName, lastName, phoneNumber, address], (err, results) => {
-      if (err) {
-        console.error('Database insert error:', err);
-        res.status(500).send({ message: 'Database insert error' });
-        return;
-      }
-
-      res.send({ message: 'User registered successfully', userId: results.insertId });
-    });
-  });
+  users.push(user);
+  res.status(201).json({ userId: user.id, message: 'User registered successfully' });
 });
 
-// 로그인 엔드포인트
+// 로그인
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
-  const query = 'SELECT * FROM users WHERE email = ?';
+  const user = users.find(u => u.email === email && u.password === password);
 
-  db.query(query, [email], (err, results) => {
-    if (err) {
-      console.error('Database query error:', err);
-      res.status(500).send('Database query error');
-      return;
-    }
-
-    if (results.length === 0) {
-      res.status(400).send('Invalid email or password');
-      return;
-    }
-
-    const user = results[0];
-    const passwordMatch = bcrypt.compareSync(password, user.password);
-
-    if (!passwordMatch) {
-      res.status(400).send('Invalid email or password');
-      return;
-    }
-
-    res.send({ message: 'Login successful', userId: user.id });
-  });
+  if (user) {
+    res.status(200).json({ userId: user.id, message: 'Login successful' });
+  } else {
+    res.status(401).send('Invalid email or password');
+  }
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}/`);
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

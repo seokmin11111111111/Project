@@ -20,23 +20,23 @@ export default {
     return {
       email: '',
       password: '',
-      message: '', // 메시지 데이터 추가
+      message: '',
     };
   },
   methods: {
     ...mapActions(['login']),
     async signIn() {
-      console.log('Sign in button clicked'); // 디버그 로그 추가
+      console.log('Sign in button clicked');
 
       const user = {
         email: this.email,
         password: this.password,
       };
 
-      console.log('User data to be sent:', user); // 디버그 로그 추가
+      console.log('User data to be sent:', user);
 
       try {
-        const response = await fetch('http://localhost:3000/login', { // 서버 URL 확인
+        const response = await fetch('http://localhost:3000/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -44,23 +44,23 @@ export default {
           body: JSON.stringify(user),
         });
 
-        console.log('Response status:', response.status); // 디버그 로그 추가
+        console.log('Response status:', response.status);
 
         if (response.ok) {
           const data = await response.json();
           this.message = data.message;
-          console.log('Login successful:', data); // 디버그 로그 추가
-          this.login(data.userId); // Vuex 상태 업데이트
+          console.log('Login successful:', data);
+          this.login(data.userId);
           alert(`Login successful with ID: ${data.userId}`);
-          this.$router.push('/home'); // 로그인 후 HomeView로 이동
+          this.$router.push('/home');
         } else {
           const errorText = await response.text();
-          console.error('Error response text:', errorText); // 디버그 로그 추가
+          console.error('Error response text:', errorText);
           this.message = errorText;
           alert('Failed to login');
         }
       } catch (error) {
-        console.error('Error:', error); // 디버그 로그 추가
+        console.error('Error:', error);
         this.message = 'An error occurred';
         alert('An error occurred');
       }
@@ -87,23 +87,23 @@ html, body, #app {
   justify-content: center;
   align-items: center;
   height: 100%;
-  width: 100%; /* 부모 요소의 전체 너비를 차지하도록 설정 */
-  background: #f0f0f0; /* 배경색 추가 */
+  width: 100%;
+  background: #f0f0f0;
   padding: 20px;
-  box-sizing: border-box; /* 패딩 포함 전체 너비/높이 계산 */
+  box-sizing: border-box;
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  width: 300px; /* 폼 너비 고정 */
+  width: 300px;
 }
 
 .auth-form input {
   padding: 10px;
   border: 1px solid #ccc;
-  border-radius: 30px; /* 입력 필드 둥글게 */
+  border-radius: 30px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -113,11 +113,12 @@ html, body, #app {
   background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 30px; /* 버튼 둥글게 */
+  border-radius: 30px;
   cursor: pointer;
   width: 100%;
   box-sizing: border-box;
-  transition: background-color 0.3s ease; /* 호버 효과 */
+  transition: background-color 0.3s ease;
+  outline: none;
 }
 
 .auth-form button:hover {
@@ -144,12 +145,12 @@ html, body, #app {
   padding: 0;
   font: inherit;
   color: #007bff;
-  outline: none; 
-  box-shadow: none; 
+  outline: none;
+  box-shadow: none;
 }
 
 .text-button:focus {
-  outline: none; 
-  box-shadow: none; 
+  outline: none;
+  box-shadow: none;
 }
 </style>
