@@ -1,12 +1,13 @@
 <template>
   <div class="start-view">
+    <img src="https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMzEyMTBfNzIg%2FMDAxNzAyMjAyOTc2NDc3.hDtaME8BHxm3yQ_bfGzqEEtG0tRkHVmL2I-NT5aqNL8g.RRUwIoiuS-lGN0dJlVXzoyYZJXwZstj0La5w8hExOA0g.GIF.cplab_dy%2F%25B4%25D9%25BF%25EE%25B7%25CE%25B5%25E5.gif&type=sc960_832_gif" alt="Animated GIF" class="animated-gif" />
     <h1 class="animated-texts">
       <span class="animated-text" :class="{ show: showFirst }">Make a note</span>
       <span class="animated-text" :class="{ show: showSecond }">of the</span>
       <span class="animated-text highlight" :class="{ show: showThird }">receipt!</span>
     </h1>
-    <router-link to="/home" class="start-button">
-      <span class="button-text">시작하기</span>
+    <router-link to="/login" class="login-button">
+      <span class="button-text">로그인</span>
     </router-link>
   </div>
 </template>
@@ -66,6 +67,12 @@ export default {
   text-align: center;
 }
 
+.animated-gif {
+  width: 150px; /* 이미지 크기를 조정하세요 */
+  height: auto;
+  margin-bottom: 20px; /* 텍스트와 이미지 사이의 간격 조정 */
+}
+
 h1 {
   font-size: 48px;
   font-weight: bold;
@@ -89,7 +96,7 @@ h1 .highlight {
   animation: fadeInUp 0.5s forwards;
 }
 
-.start-button {
+.login-button {
   padding: 10px 20px;
   font-size: 18px;
   color: #fff;
@@ -106,7 +113,7 @@ h1 .highlight {
   margin-top: 20px; /* 버튼과 텍스트 사이에 간격 추가 */
 }
 
-.start-button:hover {
+.login-button:hover {
   background-color: #0056b3;
   color: #fff;
 }
@@ -116,7 +123,7 @@ h1 .highlight {
   z-index: 1;
 }
 
-.start-button::before {
+.login-button::before {
   content: '';
   position: absolute;
   top: 0;

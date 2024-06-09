@@ -58,6 +58,11 @@ export default createStore({
         return acc;
       }, {});
     },
+    getTotalAmountByMonth: (state, getters) => (year, month) => {
+      const monthString = `${year}-${month < 10 ? '0' + month : month}`;
+      const receipts = getters.getReceiptsByMonth[monthString] || [];
+      return receipts.reduce((total, receipt) => total + Number(receipt.amount || 0), 0);
+    },
     isAuthenticated: state => state.isAuthenticated,
     userId: state => state.userId
   }

@@ -1,175 +1,234 @@
 <template>
   <div class="monthly-view">
-    <h3>월별 영수증</h3>
-    <div v-for="(receipts, month) in sortedMonthlyReceipts" :key="month" class="month-group">
-      <h2 @click="toggleMonth(month)" class="month-header">{{ formatMonth(month) }}</h2>
-      <div v-if="isMonthOpen(month)" class="receipt-list">
-        <div v-for="(receipt, index) in receipts" :key="index" class="receipt-item">
-          <div class="receipt-info">
-            <span class="receipt-payment">{{ receipt.payment }}</span>
-            <span :class="{'receipt-amount positive': receipt.amount >= 0, 'receipt-amount negative': receipt.amount < 0}">
-              {{ receipt.amount >= 0 ? '+' : '-' }}{{ Math.abs(receipt.amount).toLocaleString() }}원
-            </span>
-          </div>
-          <div class="receipt-details">
-            <span class="receipt-date">{{ receipt.date }}</span>
-            <span v-if="receipt.totalAmount" class="receipt-total">{{ receipt.totalAmount.toLocaleString() }}원</span>
-          </div>
-        </div>
-        <div class="monthly-total">
-          총 지출: {{ getTotalAmountForMonth(receipts) }}원
-        </div>
+    <div class="month-navigation">
+      <button @click="previousMonth"> &lt; </button>
+      <h1>{{ formattedMonth }}</h1>
+      <button @click="nextMonth"> &gt; </button>
+    </div>
+    <div class="card-info">
+      <img :src="cardImageUrl" alt="Card Image" class="card-image" />
+      <div class="card-details">
+        <p>이달의 사용금액</p>
+        <h2>{{ thisMonthUsage.toLocaleString() }} 원</h2>
+        <p>잔여 한도</p>
+        <h2>{{ remainingLimit.toLocaleString() }} 원</h2>
+        <p>남은 잔여 한도</p>
+        <h2>{{ remainingLimitAfterUsage.toLocaleString() }} 원</h2>
+      </div>
+    </div>
+    <button @click="viewCardUsage" class="usage-button">카드사용내역</button>
+    <div class="limit-setting">
+      <h3 @click="toggleLimitSetting" class="limit-setting-toggle">잔여 한도 설정하기</h3>
+      <div v-if="showLimitSetting" class="limit-setting-form">
+        <input v-model="formattedNewLimit" @input="formatNewLimit" type="text" placeholder="잔여 한도 입력" />
+        <button @click="setLimit" class="set-limit-button">설정</button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-import { reactive } from 'vue';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'MonthlyView',
-  setup() {
-    const openMonths = reactive({});
-
-    const toggleMonth = (month) => {
-      openMonths[month] = !openMonths[month];
-    };
-
-    const isMonthOpen = (month) => {
-      return openMonths[month];
-    };
-
+  data() {
     return {
-      openMonths,
-      toggleMonth,
-      isMonthOpen
+      cardImageUrl: 'https://search.pstatic.net/sunny/?src=https%3A%2F%2Fobj-kr.the1.wiki%2Fd%2F31%2Fb2%2F55800c2b8099e6bb4c959a442f5f20fabd6f3f592b2cbb0ae69a43d557f2b5c1.png&type=sc960_832',
+      newLimit: 0,
+      showLimitSetting: false,
+      currentMonth: new Date() // 현재 월을 저장
     };
   },
   computed: {
-    ...mapGetters(['getReceiptsByMonth']),
-    monthlyReceipts() {
-      return this.getReceiptsByMonth;
+    ...mapGetters(['getTotalAmountByMonth']),
+    thisMonthUsage() {
+      const year = this.currentMonth.getFullYear();
+      const month = this.currentMonth.getMonth() + 1;
+      return this.getTotalAmountByMonth(year, month);
     },
-    sortedMonthlyReceipts() {
-      return Object.keys(this.monthlyReceipts)
-        .sort((a, b) => new Date(a) - new Date(b))
-        .reduce((acc, key) => {
-          acc[key] = this.monthlyReceipts[key];
-          return acc;
-        }, {});
+    formattedNewLimit: {
+      get() {
+        return this.newLimit ? `${this.newLimit.toLocaleString()} 원` : '';
+      },
+      set(value) {
+        const numericValue = value.replace(/[^0-9]/g, '');
+        this.newLimit = Number(numericValue);
+      }
+    },
+    formattedMonth() {
+      const year = this.currentMonth.getFullYear();
+      const month = this.currentMonth.getMonth() + 1;
+      return `${year}년 ${month < 10 ? '0' + month : month}월`;
+    },
+    remainingLimit() {
+      const yearMonth = `${this.currentMonth.getFullYear()}-${this.currentMonth.getMonth() + 1}`;
+      const storedLimit = localStorage.getItem(`remainingLimit-${yearMonth}`);
+      return storedLimit !== null ? Number(storedLimit) : 0;
+    },
+    remainingLimitAfterUsage() {
+      return this.remainingLimit - this.thisMonthUsage;
     }
   },
   methods: {
-    formatMonth(month) {
-      const [year, monthNumber] = month.split('-');
-      return `${year}년 ${monthNumber}월`;
+    ...mapActions(['saveRemainingLimit']),
+    viewCardUsage() {
+      alert('카드 사용내역 보기');
     },
-    getTotalAmountForMonth(receipts) {
-      return receipts.reduce((total, receipt) => total + Number(receipt.amount || 0), 0).toLocaleString();
+    toggleLimitSetting() {
+      this.showLimitSetting = !this.showLimitSetting;
+    },
+    setLimit() {
+      const yearMonth = `${this.currentMonth.getFullYear()}-${this.currentMonth.getMonth() + 1}`;
+      localStorage.setItem(`remainingLimit-${yearMonth}`, this.newLimit);
+      alert(`잔여 한도가 ${this.newLimit.toLocaleString()} 원으로 설정되었습니다.`);
+      this.showLimitSetting = false;
+    },
+    formatNewLimit(event) {
+      const value = event.target.value.replace(/[^0-9]/g, '');
+      this.newLimit = Number(value);
+    },
+    previousMonth() {
+      this.currentMonth = new Date(this.currentMonth.setMonth(this.currentMonth.getMonth() - 1));
+    },
+    nextMonth() {
+      this.currentMonth = new Date(this.currentMonth.setMonth(this.currentMonth.getMonth() + 1));
     }
   }
 };
 </script>
 
 <style scoped>
-.monthly-view {
-  padding: 80px 20px 20px; /* Add padding-top to avoid overlap with header */
-  text-align: left;
-  max-width: 1200px;
-  margin: 0 auto;
-  overflow: auto;
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #f9f9f9; /* 전체 배경색 설정 */
 }
 
-.month-group {
+#app {
+  height: 100%;
+}
+
+.monthly-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  height: 100%;
+  width: 100%; /* 화면 전체 너비 설정 */
+  box-sizing: border-box; /* 박스 크기 계산에 패딩과 테두리를 포함 */
+}
+
+.month-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 20px;
 }
 
-.month-header {
+.month-navigation h1 {
+  margin: 0 20px;
+  font-size: 24px;
+}
+
+.month-navigation button {
+  background-color: transparent;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.card-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.card-image {
+  width: 300px;
+  height: 180px;
+  border-radius: 10px;
+  margin-right: 20px;
+}
+
+.card-details {
+  flex-grow: 1;
+}
+
+.card-details p {
+  margin: 0;
+  font-size: 16px;
+  color: #666;
+}
+
+.card-details h2 {
+  margin: 10px 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.usage-button {
+  display: block;
+  width: 50%; /* 너비를 줄여서 화면 중앙 정렬 */
+  max-width: 200px; /* 최대 너비 설정 */
+  padding: 15px;
+  margin: 20px auto; /* 자동으로 여백을 주어 중앙 정렬 */
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.usage-button:hover {
+  background-color: #0056b3;
+}
+
+.limit-setting {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.limit-setting h3 {
+  margin-bottom: 10px;
   font-size: 18px;
   color: #333;
   cursor: pointer;
-  padding: 10px;
-  border-radius: 10px;
-  background-color: #f5f5f5;
-  margin-bottom: 10px;
-  width: 100%;
-  display: block;
-  width: 100%; /* 가로 길이 100%로 설정 */
-  max-width: 800px; /* 최대 가로 길이 설정 */
-  margin: 0 300px; /* 양 옆의 여백을 균등하게 설정 */
 }
 
-.receipt-list {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.receipt-item {
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 15px;
-  margin-bottom: 10px;
-  border-left: 5px solid; 
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.receipt-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: bold;
-  flex-grow: 1;
-}
-
-.receipt-payment {
-  color: #333;
-  flex-grow: 1;
-}
-
-.receipt-amount {
-  margin-left: 10px;
-  flex-shrink: 0;
-}
-
-.receipt-amount.positive {
-  color: green;
-}
-
-.receipt-amount.negative {
-  color: red;
-}
-
-.receipt-details {
-  display: flex;
-  justify-content: space-between;
-  color: #888;
-  flex-direction: column;
-}
-
-.receipt-date {
-  font-size: 12px;
-}
-
-.receipt-total {
-  font-size: 12px;
-}
-
-.monthly-total {
-  font-weight: bold;
+.limit-setting-form {
   margin-top: 10px;
-  font-size: 16px;
-  color: #333;
+}
+
+.limit-setting input {
+  width: calc(100% - 20px);
   padding: 10px;
-  border-left: 5px solid #f2b32b; 
-  background-color: #fff;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
   border-radius: 10px;
-  width: 100%;
+  font-size: 16px;
+}
+
+.limit-setting .set-limit-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.limit-setting .set-limit-button:hover {
+  background-color: #0056b3;
 }
 </style>

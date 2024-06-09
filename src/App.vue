@@ -21,7 +21,7 @@
       </router-link>
       <router-link v-if="showFooterButtons" to="/monthly" class="footer-button" active-class="active">
         <img src="https://search.pstatic.net/sunny/?src=https%3A%2F%2Fi.pinimg.com%2F736x%2F50%2Fa8%2Fab%2F50a8abc9cb17c477da92418085b7e1d5.jpg&type=sc960_832" alt="월별 아이콘" class="icon">
-        <span>월별</span>
+        <span></span>
       </router-link>
       <router-link v-if="showFooterButtons" to="/settings" class="footer-button" active-class="active">
         <img src="https://search.pstatic.net/sunny/?src=https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F684%2F684982.png&type=a340" alt="설정 아이콘" class="icon">

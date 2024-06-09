@@ -1,14 +1,15 @@
 <template>
   <div class="auth-container">
-    <h2>Sign in</h2>
+    <h2>LOGIN</h2>
     <form class="auth-form">
       <input type="email" placeholder="Email address" v-model="email" />
       <input type="password" placeholder="Password" v-model="password" />
-      <button type="button" @click="signIn">Sign in</button>
+      <button type="button" @click="signIn">Login</button>
       <a href="#">Forgot your password?</a>
       <p>회원이 아니신가요? <button type="button" class="text-button" @click="goToRegister">회원가입</button></p>
     </form>
     <p>{{ message }}</p> <!-- 메시지 표시 -->
+    <button class="back-button" @click="goBack">home가기</button>
   </div>
 </template>
 
@@ -51,7 +52,7 @@ export default {
           this.message = data.message;
           console.log('Login successful:', data);
           this.login(data.userId);
-          alert(`Login successful with ID: ${data.userId}`);
+          alert("로그인되었습니다.");
           this.$router.push('/home');
         } else {
           const errorText = await response.text();
@@ -67,6 +68,9 @@ export default {
     },
     goToRegister() {
       this.$router.push('/register');
+    },
+    goBack() {
+      this.$router.go(-1);
     }
   },
 };
@@ -152,5 +156,20 @@ html, body, #app {
 .text-button:focus {
   outline: none;
   box-shadow: none;
+}
+
+.back-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #5a6268;
 }
 </style>
