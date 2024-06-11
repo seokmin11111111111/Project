@@ -16,6 +16,7 @@ import MonthlyView from '@/views/MonthlyView.vue';
 import StartView from '../views/StartView.vue';
 import MonthlyDetail from '@/views/MonthlyDetail.vue';
 import RegistrationSuccess from '../views/RegistrationSuccess.vue';
+import ForgotPassword from '@/views/ForgotPassword.vue';
 
 
 
@@ -104,6 +105,11 @@ const routes = [
     path: '/register/success',
     name: 'register-success',
     component: RegistrationSuccess,
+  },
+  {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: ForgotPassword,
   },
  
   {

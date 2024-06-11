@@ -1,9 +1,12 @@
 <template>
   <div class="monthly-view">
-    <div class="month-navigation">
-      <button @click="previousMonth"> &lt; </button>
-      <h1>{{ formattedMonth }}</h1>
-      <button @click="nextMonth"> &gt; </button>
+    <div class="header">
+      <div class="month-navigation">
+        <button @click="previousMonth"> &lt; </button>
+        <h1>{{ formattedMonth }}</h1>
+        <button @click="nextMonth"> &gt; </button>
+      </div>
+      <button @click="goToCardManagement" class="card-management-button">카드등록</button>
     </div>
     <div class="card-info">
       <img :src="cardImageUrl" alt="Card Image" class="card-image" />
@@ -25,15 +28,15 @@
     </div>
     <button @click="toggleCardUsage" class="view-usage-button">카드사용내역</button>
     <div v-if="showCardUsage" class="card-usage">
-      <h2>Transactions</h2>
-      <div class="transaction" v-for="transaction in transactions" :key="transaction.id">
+      <h2>내역</h2>
+      <div class="transaction" v-for="(transaction, index) in monthlyTransactions" :key="transaction.id">
         <div class="transaction-details">
           <p class="transaction-name">{{ transaction.payment }}</p>
           <p class="transaction-date">{{ transaction.date }}</p>
         </div>
         <div class="transaction-amount">
           <p>{{ transaction.amount ? transaction.amount.toLocaleString() : 0 }} 원</p>
-          <p class="transaction-balance">{{ transaction.totalAmount ? transaction.totalAmount.toLocaleString() : 0 }} 원</p>
+          <p class="transaction-balance">{{ calculateRemainingLimit(index).toLocaleString() }} 원</p>
         </div>
       </div>
     </div>
@@ -41,6 +44,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   name: 'MonthlyView',
   props: {
@@ -61,15 +66,12 @@ export default {
     };
   },
   computed: {
+    ...mapGetters(['receipts']),
     thisMonthUsage() {
       const year = this.currentMonth.getFullYear();
       const month = this.currentMonth.getMonth() + 1;
-      return this.transactions
-        .filter(transaction => {
-          const transactionDate = new Date(transaction.date);
-          return transactionDate.getFullYear() === year && transactionDate.getMonth() + 1 === month;
-        })
-        .reduce((total, transaction) => total + (transaction.amount || 0), 0);
+      return this.monthlyTransactions
+        .reduce((total, transaction) => total + Number(transaction.amount || 0), 0); // Number()로 변환
     },
     formattedNewLimit: {
       get() {
@@ -87,6 +89,15 @@ export default {
     },
     remainingLimitAfterUsage() {
       return this.remainingLimit - this.thisMonthUsage;
+    },
+    monthlyTransactions() {
+      const year = this.currentMonth.getFullYear();
+      const month = this.currentMonth.getMonth() + 1;
+      return this.receipts
+        .filter(transaction => {
+          const transactionDate = new Date(transaction.date);
+          return transactionDate.getFullYear() === year && transactionDate.getMonth() + 1 === month;
+        });
     }
   },
   watch: {
@@ -125,6 +136,14 @@ export default {
       const yearMonth = `${this.currentMonth.getFullYear()}-${this.currentMonth.getMonth() + 1}`;
       const storedLimit = localStorage.getItem(`remainingLimit-${yearMonth}`);
       this.remainingLimit = storedLimit !== null ? Number(storedLimit) : 0;
+    },
+    calculateRemainingLimit(index) {
+      const usedAmount = this.monthlyTransactions.slice(0, index + 1)
+        .reduce((total, transaction) => total + Number(transaction.amount || 0), 0);
+      return this.remainingLimit - usedAmount;
+    },
+    goToCardManagement() {
+      this.$router.push('/card-management');
     }
   }
 };
@@ -155,11 +174,20 @@ html, body {
   box-sizing: border-box; /* 박스 크기 계산에 패딩과 테두리를 포함 */
 }
 
-.month-navigation {
+.header {
+  width: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.month-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
 }
 
 .month-navigation h1 {
@@ -174,6 +202,19 @@ html, body {
   border-radius: 5px;
   padding: 5px 10px;
   font-size: 18px;
+  cursor: pointer;
+}
+
+.card-management-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
   cursor: pointer;
 }
 
@@ -221,7 +262,7 @@ html, body {
   text-align: center;
 }
 
-.usage-button:hover, .view-usage-button:hover {
+.usage-button:hover, .view-usage-button:hover, .card-management-button:hover {
   background-color: #0056b3;
 }
 

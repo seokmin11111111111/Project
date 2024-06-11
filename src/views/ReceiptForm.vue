@@ -31,6 +31,10 @@
         <input v-model="receipt.payment" type="text" id="payment" placeholder="">
       </div>
       <div class="form-group">
+        <label for="paymentMethod">결제수단</label>
+        <input v-model="receipt.paymentMethod" type="text" id="paymentMethod" placeholder="">
+      </div>
+      <div class="form-group">
         <label for="item">품목</label>
         <input v-model="receipt.item" type="text" id="item" placeholder="">
       </div>
@@ -56,6 +60,7 @@ export default {
         date: '',
         category: '',
         payment: '',
+        paymentMethod: '', // Add paymentMethod here
         item: '',
         memo: '',
         month: ''
@@ -104,6 +109,7 @@ export default {
         date: '',
         category: '',
         payment: '',
+        paymentMethod: '', // Reset paymentMethod
         item: '',
         memo: '',
         month: ''

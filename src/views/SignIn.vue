@@ -5,11 +5,11 @@
       <input type="email" placeholder="Email address" v-model="email" />
       <input type="password" placeholder="Password" v-model="password" />
       <button type="button" @click="signIn">Login</button>
-      <a href="#">Forgot your password?</a>
+      <a @click.prevent="goToForgotPassword" href="#">Forgot your password?</a>
       <p>회원이 아니신가요? <button type="button" class="text-button" @click="goToRegister">회원가입</button></p>
     </form>
     <p>{{ message }}</p> <!-- 메시지 표시 -->
-    <button class="back-button" @click="goBack">home가기</button>
+    <button class="back-button" @click="goToHome">home가기</button>
   </div>
 </template>
 
@@ -68,6 +68,12 @@ export default {
     },
     goToRegister() {
       this.$router.push('/register');
+    },
+    goToForgotPassword() {
+      this.$router.push('/forgot-password');
+    },
+    goToHome() {
+      this.$router.push('/home');
     },
     goBack() {
       this.$router.go(-1);

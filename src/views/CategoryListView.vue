@@ -6,8 +6,7 @@
     </div>
     <div class="content">
       <button class="new-folder-button" @click="addCategory">
-        <img src="https://search.pstatic.net/sunny/?src=https%3A%2F%2Fimage.pngaaa.com%2F556%2F6289556-middle.png&type=sc960_832" alt="new folder icon" class="new-folder-icon">
-        New Folder
+        추가하기
       </button>
       <div v-for="(category, index) in categories" :key="index" class="category-item">
         <div class="category-item-content">
@@ -136,12 +135,6 @@ export default {
   cursor: pointer;
 }
 
-.new-folder-icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
-}
-
 .content {
   width: 100%;
   padding: 20px;
@@ -162,8 +155,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 600px;
+  width: 100%; /* Adjusted width to fill the container */
 }
 
 .category-item-content {
