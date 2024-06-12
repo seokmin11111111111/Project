@@ -6,7 +6,7 @@
     </div>
     <div class="content">
       <div class="settings-group">
-        <router-link to="/categories" class="settings-item">구분 목록 조회</router-link>
+        <router-link to="/categories" class="settings-item">카테고리 목록 조회</router-link>
         <router-link to="/accounts" class="settings-item">지출처 목록 조회</router-link>
       </div>
       <div class="settings-group">

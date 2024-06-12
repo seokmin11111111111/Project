@@ -28,7 +28,10 @@
       </div>
       <div class="form-group">
         <label for="payment">지출처</label>
-        <input v-model="receipt.payment" type="text" id="payment" placeholder="">
+        <select v-model="receipt.payment" id="payment" required>
+          <option value=""></option>
+          <option v-for="(account, index) in accounts" :key="index" :value="account">{{ account }}</option>
+        </select>
       </div>
       <div class="form-group">
         <label for="paymentMethod">결제수단</label>
@@ -64,7 +67,8 @@ export default {
         item: '',
         memo: '',
       },
-      categories: [] // Initialize categories as empty array
+      categories: [],
+      accounts: [] // Initialize accounts as empty array
     };
   },
   computed: {
@@ -102,12 +106,19 @@ export default {
         this.categories = storedCategories;
       }
     },
+    loadAccounts() {
+      const storedAccounts = JSON.parse(localStorage.getItem('accounts'));
+      if (storedAccounts) {
+        this.accounts = storedAccounts;
+      }
+    },
     setReceiptData(receiptData) {
       this.receipt = receiptData;
     }
   },
   created() {
     this.loadCategories(); // Load categories on component creation
+    this.loadAccounts(); // Load accounts on component creation
     if (this.$route.params.receipt) {
       this.setReceiptData(this.$route.params.receipt);
     }

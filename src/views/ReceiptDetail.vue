@@ -7,7 +7,7 @@
       <h1>금액: {{ formatCurrency(receipt.amount) }} 원</h1>
       <div class="receipt-amounts">
         <p>카테고리: {{ receipt.category }}</p>
-        <p>품목: {{ receipt.item }}</p>
+        <p>결제수단: {{ receipt.paymentMethod }}</p>
         <p>메모: {{ receipt.memo }}</p>
       </div>
       <div class="buttons">
@@ -37,7 +37,6 @@ export default {
     },
     editReceipt() {
       this.$emit('edit-receipt', this.receipt.id);
-      this.$router.push({ name: 'ReceiptForm', params: { id: this.receipt.id } });
     },
     handleDeleteReceipt() {
       this.$emit('delete-receipt', this.receipt.id);

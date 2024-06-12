@@ -11,12 +11,13 @@ import AddAccountView from '../views/AddAccountView.vue';
 import SignIn from '@/views/SignIn.vue';
 import Register from '@/views/Register.vue';
 import NaverLogin from '@/views/NaverLogin'
-import KakaoLogin from '@/views/KakaoLogin'
 import MonthlyView from '@/views/MonthlyView.vue';
 import StartView from '../views/StartView.vue';
 import MonthlyDetail from '@/views/MonthlyDetail.vue';
 import RegistrationSuccess from '../views/RegistrationSuccess.vue';
 import ForgotPassword from '@/views/ForgotPassword.vue';
+
+
 
 
 
@@ -73,11 +74,7 @@ const routes = [
     name: 'NaverLogin',
     component: NaverLogin
   },
-  {
-    path: '/kakao-login',
-    name: 'KakaoLogin',
-    component: KakaoLogin
-  },
+ 
   {
     path: '/form/:id?',
     name: 'ReceiptForm',
@@ -111,7 +108,7 @@ const routes = [
     name: 'forgot-password',
     component: ForgotPassword,
   },
- 
+
   {
     path: '/home',
     name: 'home',

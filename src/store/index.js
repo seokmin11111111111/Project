@@ -3,9 +3,14 @@ import { createStore } from 'vuex';
 export default createStore({
   state: {
     receipts: JSON.parse(localStorage.getItem('receipts')) || [],
-    isAuthenticated: false,
-    userId: null,
-    selectedReceipt: {} // Selected receipt state
+    isAuthenticated: localStorage.getItem('isAuthenticated') === 'true',
+    userId: localStorage.getItem('userId') || null,
+    currency: localStorage.getItem('selectedCurrency') || 'KRW',
+    exchangeRates: {
+      KRW: 1,
+      USD: 0.00085,
+      JPY: 0.1
+    }
   },
   mutations: {
     ADD_RECEIPT(state, receipt) {
@@ -23,16 +28,18 @@ export default createStore({
     SET_AUTH(state, payload) {
       state.isAuthenticated = payload.isAuthenticated;
       state.userId = payload.userId;
+      localStorage.setItem('isAuthenticated', payload.isAuthenticated);
+      localStorage.setItem('userId', payload.userId);
     },
     LOGOUT(state) {
       state.isAuthenticated = false;
       state.userId = null;
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('userId');
     },
-    SELECT_RECEIPT(state, receipt) {
-      state.selectedReceipt = receipt;
-    },
-    CLEAR_SELECTED_RECEIPT(state) {
-      state.selectedReceipt = {};
+    SET_CURRENCY(state, currency) {
+      state.currency = currency;
+      localStorage.setItem('selectedCurrency', currency);
     }
   },
   actions: {
@@ -51,16 +58,13 @@ export default createStore({
     logout({ commit }) {
       commit('LOGOUT');
     },
-    selectReceipt({ commit }, receipt) {
-      commit('SELECT_RECEIPT', receipt);
-    },
-    clearSelectedReceipt({ commit }) {
-      commit('CLEAR_SELECTED_RECEIPT');
+    setCurrency({ commit }, currency) {
+      commit('SET_CURRENCY', currency);
     }
   },
   getters: {
     receipts: state => state.receipts,
-    getReceiptById: state => id => state.receipts.find(receipt => receipt.id === id),
+    getReceiptById: state => id => state.receipts[id],
     getReceiptsByMonth: state => {
       return state.receipts.reduce((acc, receipt) => {
         const month = receipt.date.substr(0, 7); // 'YYYY-MM'
@@ -78,6 +82,11 @@ export default createStore({
     },
     isAuthenticated: state => state.isAuthenticated,
     userId: state => state.userId,
-    selectedReceipt: state => state.selectedReceipt
+    currency: state => state.currency,
+    exchangeRates: state => state.exchangeRates,
+    convertCurrency: (state) => (amount) => {
+      const rate = state.exchangeRates[state.currency];
+      return (amount * rate).toFixed(2);
+    }
   }
 });

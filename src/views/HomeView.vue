@@ -1,4 +1,3 @@
-<!-- HomeView.vue -->
 <template>
   <div class="home-content">
     <div class="header">
@@ -42,7 +41,7 @@
 
     <div v-if="selectedReceipt" class="modal-overlay" @click="closeModal">
       <div class="modal" @click.stop>
-        <ReceiptDetail :receipt="selectedReceipt" @delete-receipt="handleDeleteReceipt" />
+        <ReceiptDetail :receipt="selectedReceipt" @edit-receipt="editReceipt" @delete-receipt="handleDeleteReceipt" />
         <button @click="closeModal" class="option-button">닫기</button>
       </div>
     </div>
@@ -111,7 +110,7 @@ export default {
     filterReceiptsByMonth() {
       const month = this.filterMonth;
       this.filteredReceipts = this.receipts
-        .filter(receipt => receipt && receipt.date && receipt.date.startsWith(month)) // receipt가 null인지 확인
+        .filter(receipt => receipt && receipt.date && receipt.date.startsWith(month))
         .sort((a, b) => new Date(a.date) - new Date(b.date));
     },
     selectReceipt(receipt) {
@@ -119,6 +118,10 @@ export default {
     },
     closeModal() {
       this.selectedReceipt = null;
+    },
+    editReceipt(id) {
+      this.$router.push({ name: 'ReceiptForm', params: { id: id } });
+      this.closeModal();
     }
   },
   watch: {
@@ -242,8 +245,7 @@ export default {
   position: relative;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   width: 300%;
-  max-width: 1200px; /* 목록 너비를 넓힙니다 */
-  
+  max-width: 1200px;
 }
 
 .receipt-info {
