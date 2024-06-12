@@ -1,3 +1,4 @@
+<!-- HomeView.vue -->
 <template>
   <div class="home-content">
     <div class="header">
@@ -110,7 +111,7 @@ export default {
     filterReceiptsByMonth() {
       const month = this.filterMonth;
       this.filteredReceipts = this.receipts
-        .filter(receipt => receipt.date.startsWith(month))
+        .filter(receipt => receipt && receipt.date && receipt.date.startsWith(month)) // receipt가 null인지 확인
         .sort((a, b) => new Date(a.date) - new Date(b.date));
     },
     selectReceipt(receipt) {

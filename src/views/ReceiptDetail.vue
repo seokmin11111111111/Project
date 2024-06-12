@@ -1,5 +1,5 @@
 <template>
-  <div v-if="receipt" class="receipt-detail-container">
+  <div class="receipt-detail-container">
     <h2>영수증</h2>
     <div class="receipt-detail">
       <p>날짜: {{ receipt.date }}</p>
@@ -13,7 +13,7 @@
       <div class="buttons">
         <button @click="shareReceipt">공유하기</button>
         <button @click="editReceipt" class="edit-button">수정하기</button>
-        <button @click="deleteReceipt" class="delete-button">삭제하기</button>
+        <button @click="handleDeleteReceipt" class="delete-button">삭제하기</button>
       </div>
     </div>
   </div>
@@ -25,15 +25,7 @@ export default {
   props: {
     receipt: {
       type: Object,
-      default: () => ({
-        date: '',
-        cardInfo: '',
-        amount: 0,
-        category: '',
-        payment: '',
-        item: '',
-        memo: ''
-      })
+      required: true,
     }
   },
   methods: {
@@ -47,11 +39,11 @@ export default {
       this.$emit('edit-receipt', this.receipt.id);
       this.$router.push({ name: 'ReceiptForm', params: { id: this.receipt.id } });
     },
-    deleteReceipt() {
+    handleDeleteReceipt() {
       this.$emit('delete-receipt', this.receipt.id);
     }
   }
-}
+};
 </script>
 
 <style scoped>

@@ -68,10 +68,7 @@ export default {
   computed: {
     ...mapGetters(['receipts']),
     thisMonthUsage() {
-      const year = this.currentMonth.getFullYear();
-      const month = this.currentMonth.getMonth() + 1;
-      return this.monthlyTransactions
-        .reduce((total, transaction) => total + Number(transaction.amount || 0), 0); // Number()로 변환
+      return this.monthlyTransactions.reduce((total, transaction) => total + Number(transaction.amount || 0), 0); // Number()로 변환
     },
     formattedNewLimit: {
       get() {
@@ -94,6 +91,7 @@ export default {
       const year = this.currentMonth.getFullYear();
       const month = this.currentMonth.getMonth() + 1;
       return this.receipts
+        .filter(transaction => transaction && transaction.date) // date가 존재하는 경우만 필터링
         .filter(transaction => {
           const transactionDate = new Date(transaction.date);
           return transactionDate.getFullYear() === year && transactionDate.getMonth() + 1 === month;

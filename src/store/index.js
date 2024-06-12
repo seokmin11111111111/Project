@@ -4,7 +4,8 @@ export default createStore({
   state: {
     receipts: JSON.parse(localStorage.getItem('receipts')) || [],
     isAuthenticated: false,
-    userId: null
+    userId: null,
+    selectedReceipt: {} // Selected receipt state
   },
   mutations: {
     ADD_RECEIPT(state, receipt) {
@@ -26,6 +27,12 @@ export default createStore({
     LOGOUT(state) {
       state.isAuthenticated = false;
       state.userId = null;
+    },
+    SELECT_RECEIPT(state, receipt) {
+      state.selectedReceipt = receipt;
+    },
+    CLEAR_SELECTED_RECEIPT(state) {
+      state.selectedReceipt = {};
     }
   },
   actions: {
@@ -43,11 +50,17 @@ export default createStore({
     },
     logout({ commit }) {
       commit('LOGOUT');
+    },
+    selectReceipt({ commit }, receipt) {
+      commit('SELECT_RECEIPT', receipt);
+    },
+    clearSelectedReceipt({ commit }) {
+      commit('CLEAR_SELECTED_RECEIPT');
     }
   },
   getters: {
     receipts: state => state.receipts,
-    getReceiptById: state => id => state.receipts[id],
+    getReceiptById: state => id => state.receipts.find(receipt => receipt.id === id),
     getReceiptsByMonth: state => {
       return state.receipts.reduce((acc, receipt) => {
         const month = receipt.date.substr(0, 7); // 'YYYY-MM'
@@ -64,6 +77,7 @@ export default createStore({
       return receipts.reduce((total, receipt) => total + Number(receipt.amount || 0), 0);
     },
     isAuthenticated: state => state.isAuthenticated,
-    userId: state => state.userId
+    userId: state => state.userId,
+    selectedReceipt: state => state.selectedReceipt
   }
 });

@@ -83,6 +83,7 @@ export default {
       const start = new Date(this.startDate);
       const end = new Date(this.endDate);
       return this.receipts.filter(receipt => {
+        if (!receipt || !receipt.date) return false;
         const date = new Date(receipt.date);
         return date >= start && date <= end;
       });
